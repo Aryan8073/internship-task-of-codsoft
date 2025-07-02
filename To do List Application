@@ -1,0 +1,123 @@
+import tkinter as tk
+from tkinter import messagebox, simpledialog, filedialog
+import os
+
+class ToDoApp:
+    def _init_(self, root):
+        self.root = root
+        self.root.title(" To-Do List")
+        self.root.geometry("500x600")
+        self.root.config(bg="#2c3e50")
+
+        self.tasks = []
+
+        # Title
+        tk.Label(root, text="📝 To-Do List", font=("Helvetica", 24, "bold"), bg="#2c3e50", fg="white").pack(pady=10)
+
+        # Entry
+        self.entry = tk.Entry(root, font=("Arial", 14), width=30)
+        self.entry.pack(pady=10)
+
+        # Buttons
+        btn_frame = tk.Frame(root, bg="#2c3e50")
+        btn_frame.pack(pady=5)
+
+        tk.Button(btn_frame, text="Add Task", width=12, command=self.add_task).grid(row=0, column=0, padx=5)
+        tk.Button(btn_frame, text="Edit Task", width=12, command=self.edit_task).grid(row=0, column=1, padx=5)
+        tk.Button(btn_frame, text="Delete Task", width=12, command=self.delete_task).grid(row=0, column=2, padx=5)
+        tk.Button(btn_frame, text="Mark Done", width=12, command=self.mark_done).grid(row=1, column=0, padx=5, pady=5)
+       
+
+        # Listbox with Scrollbar
+        list_frame = tk.Frame(root)
+        list_frame.pack(pady=10)
+
+        self.scrollbar = tk.Scrollbar(list_frame)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.listbox = tk.Listbox(list_frame, font=("Arial", 14), width=40, height=15, yscrollcommand=self.scrollbar.set)
+        self.listbox.pack()
+        self.scrollbar.config(command=self.listbox.yview)
+
+        # Status
+        self.status = tk.Label(root, text="Total: 0 | Completed: 0 | Remaining: 0", bg="#2c3e50", fg="white", font=("Arial", 12))
+        self.status.pack(pady=10)
+
+    def update_status(self):
+        total = len(self.tasks)
+        completed = sum(1 for t in self.tasks if t[1])
+        remaining = total - completed
+        self.status.config(text=f"Total: {total} | Completed: {completed} | Remaining: {remaining}")
+
+    def refresh_listbox(self):
+        self.listbox.delete(0, tk.END)
+        for task, done in self.tasks:
+            display = f"✔ {task}" if done else task
+            self.listbox.insert(tk.END, display)
+        self.update_status()
+
+    def add_task(self):
+        task = self.entry.get().strip()
+        if task:
+            self.tasks.append((task, False))
+            self.entry.delete(0, tk.END)
+            self.refresh_listbox()
+        else:
+            messagebox.showwarning("Input Error", "Please enter a task.")
+
+    def edit_task(self):
+        try:
+            index = self.listbox.curselection()[0]
+            current_task = self.tasks[index][0]
+            new_task = simpledialog.askstring("Edit Task", "Update task:", initialvalue=current_task)
+            if new_task:
+                self.tasks[index] = (new_task, self.tasks[index][1])
+                self.refresh_listbox()
+        except IndexError:
+            messagebox.showwarning("Selection Error", "Please select a task to edit.")
+
+    def delete_task(self):
+        try:
+            index = self.listbox.curselection()[0]
+            self.tasks.pop(index)
+            self.refresh_listbox()
+        except IndexError:
+            messagebox.showwarning("Selection Error", "Please select a task to delete.")
+
+    def mark_done(self):
+        try:
+            index = self.listbox.curselection()[0]
+            task = self.tasks[index][0]
+            self.tasks[index] = (task, True)
+            self.refresh_listbox()
+        except IndexError:
+            messagebox.showwarning("Selection Error", "Please select a task to mark as done.")
+
+    def clear_all(self):
+        if messagebox.askyesno("Clear All", "Are you sure you want to delete all tasks?"):
+            self.tasks.clear()
+            self.refresh_listbox()
+
+    def save_tasks(self):
+        file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
+        if file:
+            with open(file, "w") as f:
+                for task, done in self.tasks:
+                    f.write(f"{task}|{int(done)}\n")
+            messagebox.showinfo("Saved", "Tasks saved successfully.")
+
+    def load_tasks(self):
+        file = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
+        if file and os.path.exists(file):
+            self.tasks.clear()
+            with open(file, "r") as f:
+                for line in f:
+                    task, done = line.strip().split("|")
+                    self.tasks.append((task, bool(int(done))))
+            self.refresh_listbox()
+
+# Run the app
+if _name_ == "_main_":
+    root = tk.Tk()
+    app = ToDoApp(root)
+    root.mainloop()
