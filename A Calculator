@@ -1,0 +1,79 @@
+# A Simple Calculator
+import tkinter as tk
+
+class PerfectCalculator:
+    def _init_(self, root):
+        self.root = root
+        self.root.title(" Calculator")
+        self.root.geometry("400x550")
+        self.expression = ""
+
+        self.input_text = tk.StringVar()
+        self.input_frame = tk.Frame(self.root)
+        self.input_frame.pack()
+
+        self.input_field = tk.Entry(
+            self.input_frame, font=('arial', 24, 'bold'),
+            textvariable=self.input_text, justify='right', bd=10, insertwidth=2
+        )
+        self.input_field.grid(row=0, column=0, ipadx=8, ipady=25, padx=10, pady=10)
+        self.input_field.bind("<Return>", self.evaluate)
+        self.input_field.bind("<Key>", self.key_input)
+
+        self.create_buttons()
+
+    def add_to_expression(self, value):
+        self.expression += str(value)
+        self.input_text.set(self.expression)
+
+    def evaluate(self, event=None):
+        try:
+            result = str(eval(self.expression))
+            self.input_text.set(result)
+            self.expression = result
+        except:
+            self.input_text.set("Error")
+            self.expression = ""
+
+    def clear(self):
+        self.expression = ""
+        self.input_text.set("")
+
+    def key_input(self, event):
+        if event.char in "0123456789+-*/().":
+            self.add_to_expression(event.char)
+        elif event.keysym == "Return":
+            self.evaluate()
+
+    def create_buttons(self):
+        button_texts = [
+            ['7', '8', '9', '/'],
+            ['4', '5', '6', '*'],
+            ['1', '2', '3', '-'],
+            ['0', '.', '=', '+'],
+            ['(', ')', 'C']
+        ]
+
+        for row in button_texts:
+            row_frame = tk.Frame(self.root)
+            row_frame.pack(expand=True, fill="both")
+            for btn_text in row:
+                btn = tk.Button(
+                    row_frame, text=btn_text, font=('arial', 18),
+                    relief='ridge', bd=5, height=2, width=8,
+                    command=lambda txt=btn_text: self.on_button_click(txt)
+                )
+                btn.pack(side='left', expand=True, fill="both")
+
+    def on_button_click(self, char):
+        if char == "=":
+            self.evaluate()
+        elif char == "C":
+            self.clear()
+        else:
+            self.add_to_expression(char)
+
+if _name_ == "_main_":
+    root = tk.Tk()
+    app = PerfectCalculator(root)
+    root.mainloop()
