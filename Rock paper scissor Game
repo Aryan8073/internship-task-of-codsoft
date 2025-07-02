@@ -1,0 +1,67 @@
+# A Rock Paper Scissor game
+import tkinter as tk
+import random
+
+# Initialize main window
+root = tk.Tk()
+root.title("Rock-Paper-Scissors")
+root.geometry("400x500")
+root.config(bg="#1e1e2f")
+
+# Score variables
+user_score = 0
+comp_score = 0
+
+# Choices
+choices = ["Rock", "Paper", "Scissors"]
+
+# Labels
+title = tk.Label(root, text="Rock-Paper-Scissors", font=("Helvetica", 20, "bold"), bg="#1e1e2f", fg="white")
+title.pack(pady=20)
+
+result_label = tk.Label(root, text="", font=("Arial", 16), bg="#1e1e2f", fg="white")
+result_label.pack(pady=10)
+
+score_label = tk.Label(root, text="Your Score: 0 | Computer Score: 0", font=("Arial", 14), bg="#1e1e2f", fg="white")
+score_label.pack(pady=10)
+
+# Game logic
+def play(user_choice):
+    global user_score, comp_score
+    comp_choice = random.choice(choices)
+    result = ""
+
+    if user_choice == comp_choice:
+        result = f"Both chose {user_choice}. It's a tie!"
+    elif (user_choice == "Rock" and comp_choice == "Scissors") or \
+         (user_choice == "Paper" and comp_choice == "Rock") or \
+         (user_choice == "Scissors" and comp_choice == "Paper"):
+        user_score += 1
+        result = f"You chose {user_choice}, computer chose {comp_choice}. You win!"
+    else:
+        comp_score += 1
+        result = f"You chose {user_choice}, computer chose {comp_choice}. You lose!"
+
+    result_label.config(text=result)
+    score_label.config(text=f"Your Score: {user_score} | Computer Score: {comp_score}")
+
+# Buttons
+btn_frame = tk.Frame(root, bg="#1e1e2f")
+btn_frame.pack(pady=20)
+
+for choice in choices:
+    tk.Button(btn_frame, text=choice, width=10, font=("Arial", 12), bg="#4caf50", fg="white",
+              command=lambda c=choice: play(c)).pack(pady=5)
+
+# Reset button
+def reset_game():
+    global user_score, comp_score
+    user_score = 0
+    comp_score = 0
+    result_label.config(text="")
+    score_label.config(text="Your Score: 0 | Computer Score: 0")
+
+tk.Button(root, text="Reset Game", command=reset_game, bg="#f44336", fg="white", font=("Arial", 12)).pack(pady=10)
+
+# Run the app
+root.mainloop()
